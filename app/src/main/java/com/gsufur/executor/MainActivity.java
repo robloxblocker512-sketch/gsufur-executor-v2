@@ -1,4 +1,4 @@
-﻿package com.gsufur.executor;
+package com.gsufur.executor;
 
 import android.os.Bundle;
 import android.widget.Button;
