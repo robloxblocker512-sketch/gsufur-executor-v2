@@ -35,14 +35,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startOverlayService() {
-        Intent serviceIntent = new Intent(this, FloatingOverlayService.class);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(serviceIntent);
-        } else {
-            startService(serviceIntent);
+        try {
+            Intent serviceIntent = new Intent(this, FloatingOverlayService.class);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(serviceIntent);
+            } else {
+                startService(serviceIntent);
+            }
+            Toast.makeText(this, "GSUFUR overlay started!", Toast.LENGTH_SHORT).show();
+            finish();
+        } catch (Exception e) {
+            Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
-        Toast.makeText(this, "GSUFUR overlay started!", Toast.LENGTH_SHORT).show();
-        finish();
     }
 
     @Override
