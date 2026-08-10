@@ -7,7 +7,6 @@ import android.os.Build;
 import android.os.IBinder;
 import android.view.Gravity;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -19,7 +18,6 @@ public class FloatingOverlayService extends Service {
 
     private WindowManager windowManager;
     private LinearLayout overlayView;
-    private EditText scriptEditor;
 
     @Override
     public void onCreate() {
@@ -31,12 +29,13 @@ public class FloatingOverlayService extends Service {
         overlayView = (LinearLayout) inflater.inflate(R.layout.overlay_layout, null);
 
         WindowManager.LayoutParams params = new WindowManager.LayoutParams(
-                WindowManager.LayoutParams.WRAP_CONTENT,
+                400,
                 WindowManager.LayoutParams.WRAP_CONTENT,
                 Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ?
                         WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY :
                         WindowManager.LayoutParams.TYPE_PHONE,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL |
+                        WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
                 PixelFormat.TRANSLUCENT
         );
         params.gravity = Gravity.TOP | Gravity.START;
@@ -45,26 +44,18 @@ public class FloatingOverlayService extends Service {
 
         windowManager.addView(overlayView, params);
 
-        scriptEditor = overlayView.findViewById(R.id.scriptEditor);
+        EditText scriptEditor = overlayView.findViewById(R.id.scriptEditor);
         Button executeBtn = overlayView.findViewById(R.id.executeBtn);
         Button clearBtn = overlayView.findViewById(R.id.clearBtn);
 
-        // Keep focus on EditText
-        scriptEditor.setOnTouchListener((v, event) -> {
-            if (event.getAction() == MotionEvent.ACTION_UP) {
-                v.requestFocus();
-                return true;
-            }
-            return false;
-        });
+        // Force focus
+        scriptEditor.setFocusable(true);
+        scriptEditor.setFocusableInTouchMode(true);
+        scriptEditor.requestFocus();
 
-        // Re-request focus when the overlay is touched
-        overlayView.setOnTouchListener((v, event) -> {
-            if (event.getAction() == MotionEvent.ACTION_UP) {
-                scriptEditor.requestFocus();
-                return true;
-            }
-            return false;
+        // Show keyboard when tapped
+        scriptEditor.setOnClickListener(v -> {
+            v.requestFocus();
         });
 
         executeBtn.setOnClickListener(v -> {
