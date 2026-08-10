@@ -19,6 +19,7 @@ public class FloatingOverlayService extends Service {
 
     private WindowManager windowManager;
     private LinearLayout overlayView;
+    private EditText scriptEditor;
 
     @Override
     public void onCreate() {
@@ -44,29 +45,31 @@ public class FloatingOverlayService extends Service {
 
         windowManager.addView(overlayView, params);
 
-        EditText scriptEditor = overlayView.findViewById(R.id.scriptEditor);
+        scriptEditor = overlayView.findViewById(R.id.scriptEditor);
         Button executeBtn = overlayView.findViewById(R.id.executeBtn);
         Button clearBtn = overlayView.findViewById(R.id.clearBtn);
 
-        // Make EditText work
+        // Keep focus on EditText
         scriptEditor.setOnTouchListener((v, event) -> {
             if (event.getAction() == MotionEvent.ACTION_UP) {
-                v.performClick();
                 v.requestFocus();
                 return true;
             }
             return false;
         });
 
-        scriptEditor.requestFocus();
+        // Re-request focus when the overlay is touched
+        overlayView.setOnTouchListener((v, event) -> {
+            if (event.getAction() == MotionEvent.ACTION_UP) {
+                scriptEditor.requestFocus();
+                return true;
+            }
+            return false;
+        });
 
         executeBtn.setOnClickListener(v -> {
             String script = scriptEditor.getText().toString();
-            if (!script.isEmpty()) {
-                Toast.makeText(this, "Script Executed!", Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(this, "Script is empty", Toast.LENGTH_SHORT).show();
-            }
+            Toast.makeText(this, script.isEmpty() ? "Empty" : "Executed!", Toast.LENGTH_SHORT).show();
         });
 
         clearBtn.setOnClickListener(v -> {
