@@ -1,0 +1,129 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="#1a1a2e"
+    android:elevation="8dp"
+    android:padding="8dp">
+
+    <LinearLayout
+        android:id="@+id/expandedView"
+        android:layout_width="320dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@drawable/overlay_bg"
+        android:padding="12dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="4dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="⚡ GSUFUR"
+                android:textColor="#00ffff"
+                android:textSize="18sp"
+                android:textStyle="bold"/>
+
+            <ImageButton
+                android:id="@+id/minimizeBtn"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:background="@android:color/transparent"
+                android:src="@android:drawable/ic_menu_edit"
+                android:scaleType="centerCrop"
+                android:contentDescription="Minimize"/>
+
+            <ImageButton
+                android:id="@+id/closeBtn"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:background="@android:color/transparent"
+                android:src="@android:drawable/ic_menu_close_clear_cancel"
+                android:scaleType="centerCrop"
+                android:contentDescription="Close"/>
+        </LinearLayout>
+
+        <EditText
+            android:id="@+id/scriptEditor"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:background="#0f0f1a"
+            android:textColor="#00ff88"
+            android:textSize="13sp"
+            android:fontFamily="monospace"
+            android:gravity="top|start"
+            android:padding="12dp"
+            android:hint="-- Enter Lua script"
+            android:textColorHint="#444466"
+            android:lineSpacingExtra="4dp"
+            android:scrollbars="vertical"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp">
+
+            <Button
+                android:id="@+id/executeBtn"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="▶"
+                android:background="@drawable/btn_execute"
+                android:textColor="#000000"
+                android:textSize="18sp"
+                android:padding="12dp"
+                android:layout_marginEnd="4dp"/>
+
+            <Button
+                android:id="@+id/clearBtn"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="✕"
+                android:background="@drawable/btn_clear"
+                android:textColor="#ffffff"
+                android:textSize="18sp"
+                android:padding="12dp"
+                android:layout_marginStart="4dp"/>
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/statusText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Ready"
+            android:textColor="#666666"
+            android:textSize="11sp"
+            android:gravity="center"
+            android:paddingTop="4dp"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/collapsedView"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="gone"
+        android:background="@drawable/overlay_bg">
+
+        <TextView
+            android:id="@+id/collapsedStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="GSUFUR"
+            android:textColor="#00ffff"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:gravity="center"/>
+    </LinearLayout>
+
+</LinearLayout>
