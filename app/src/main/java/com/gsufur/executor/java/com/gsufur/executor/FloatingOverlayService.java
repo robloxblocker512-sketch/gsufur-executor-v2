@@ -1,4 +1,4 @@
-﻿package com.gsufur.executor;
+package com.gsufur.executor;
 
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -84,17 +84,17 @@ public class FloatingOverlayService extends Service {
         executeBtn.setOnClickListener(v -> {
             String script = scriptEditor.getText().toString();
             if (!script.isEmpty()) {
-                statusText.setText("✅ Executed!");
-                Toast.makeText(this, "✅ Script Executed!", Toast.LENGTH_SHORT).show();
+                statusText.setText("Executed!");
+                Toast.makeText(this, "Script Executed!", Toast.LENGTH_SHORT).show();
             } else {
-                statusText.setText("⚠️ Empty script");
-                Toast.makeText(this, "⚠️ Script is empty", Toast.LENGTH_SHORT).show();
+                statusText.setText("Empty script");
+                Toast.makeText(this, "Script is empty", Toast.LENGTH_SHORT).show();
             }
         });
 
         clearBtn.setOnClickListener(v -> {
             scriptEditor.setText("");
-            statusText.setText("🧹 Cleared");
+            statusText.setText("Cleared");
         });
 
         closeBtn.setOnClickListener(v -> stopSelf());
