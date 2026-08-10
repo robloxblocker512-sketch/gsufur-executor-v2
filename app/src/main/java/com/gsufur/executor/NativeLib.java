@@ -1,4 +1,4 @@
-﻿package com.gsufur.executor;
+package com.gsufur.executor;
 
 public class NativeLib {
     static {
