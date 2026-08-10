@@ -43,7 +43,6 @@ public class MainActivity extends AppCompatActivity {
                 startService(serviceIntent);
             }
             Toast.makeText(this, "GSUFUR overlay started!", Toast.LENGTH_SHORT).show();
-            finish();
         } catch (Exception e) {
             Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
