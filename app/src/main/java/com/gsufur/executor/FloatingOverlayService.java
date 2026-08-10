@@ -23,6 +23,14 @@ public class FloatingOverlayService extends Service {
     public void onCreate() {
         super.onCreate();
 
+        // Initialize native hook
+        int result = NativeLib.initialize();
+        if (result == 0) {
+            Toast.makeText(this, "GSUFUR ready!", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(this, "Failed to initialize hook", Toast.LENGTH_SHORT).show();
+        }
+
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
 
         LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
@@ -48,19 +56,18 @@ public class FloatingOverlayService extends Service {
         Button executeBtn = overlayView.findViewById(R.id.executeBtn);
         Button clearBtn = overlayView.findViewById(R.id.clearBtn);
 
-        // Force focus
         scriptEditor.setFocusable(true);
         scriptEditor.setFocusableInTouchMode(true);
         scriptEditor.requestFocus();
 
-        // Show keyboard when tapped
-        scriptEditor.setOnClickListener(v -> {
-            v.requestFocus();
-        });
-
         executeBtn.setOnClickListener(v -> {
             String script = scriptEditor.getText().toString();
-            Toast.makeText(this, script.isEmpty() ? "Empty" : "Executed!", Toast.LENGTH_SHORT).show();
+            if (!script.isEmpty()) {
+                NativeLib.executeScript(script);
+                Toast.makeText(this, "Script sent to game!", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "Script is empty", Toast.LENGTH_SHORT).show();
+            }
         });
 
         clearBtn.setOnClickListener(v -> {
