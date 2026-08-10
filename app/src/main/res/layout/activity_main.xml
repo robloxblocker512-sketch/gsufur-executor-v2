@@ -1,28 +1,295 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp"
-    android:background="#0d0d0d">
-    <EditText
-        android:id="@+id/scriptEditor"
+    android:background="@drawable/gradient_bg">
+
+    <!-- Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:background="#1a1a2e"
+        android:elevation="4dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="⚡ GSUFUR"
+            android:textColor="#00ffff"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.05"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="v2.0"
+            android:textColor="#666666"
+            android:textSize="12sp"
+            android:layout_gravity="center_vertical"/>
+    </LinearLayout>
+
+    <!-- Tabs -->
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tabLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#16213e"
+        app:tabTextColor="#888888"
+        app:tabSelectedTextColor="#00ffff"
+        app:tabIndicatorColor="#00ffff"
+        app:tabIndicatorHeight="3dp"
+        app:tabGravity="fill"
+        app:tabMode="fixed">
+
+        <com.google.android.material.tabs.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="EXECUTE"/>
+
+        <com.google.android.material.tabs.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="SCRIPTS"/>
+
+        <com.google.android.material.tabs.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="FILES"/>
+
+        <com.google.android.material.tabs.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="SETTINGS"/>
+
+    </com.google.android.material.tabs.TabLayout>
+
+    <!-- Content -->
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:background="#1a1a1a"
-        android:textColor="#00ff00"
-        android:fontFamily="monospace"
-        android:gravity="top|start"
-        android:padding="12dp"
-        android:hint="-- Enter Lua script"
-        android:textColorHint="#444444"/>
-    <Button
-        android:id="@+id/executeBtn"
+        android:background="#0f0f1a"
+        android:padding="12dp">
+
+        <!-- Execute Tab -->
+        <LinearLayout
+            android:id="@+id/executeTab"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:visibility="visible">
+
+            <EditText
+                android:id="@+id/scriptEditor"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:background="@drawable/editor_bg"
+                android:textColor="#00ff88"
+                android:textSize="14sp"
+                android:fontFamily="monospace"
+                android:gravity="top|start"
+                android:padding="16dp"
+                android:hint="-- Enter Lua script here"
+                android:textColorHint="#444466"
+                android:lineSpacingExtra="4dp"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="12dp">
+
+                <Button
+                    android:id="@+id/executeBtn"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="▶ EXECUTE"
+                    android:background="@drawable/btn_execute"
+                    android:textColor="#000000"
+                    android:textSize="16sp"
+                    android:padding="16dp"
+                    android:layout_marginEnd="6dp"
+                    android:elevation="2dp"/>
+
+                <Button
+                    android:id="@+id/clearBtn"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="✕ CLEAR"
+                    android:background="@drawable/btn_clear"
+                    android:textColor="#ffffff"
+                    android:textSize="16sp"
+                    android:padding="16dp"
+                    android:layout_marginStart="6dp"
+                    android:elevation="2dp"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="8dp">
+
+                <Button
+                    android:id="@+id/saveBtn"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="💾 SAVE"
+                    android:background="@drawable/btn_save"
+                    android:textColor="#ffffff"
+                    android:textSize="16sp"
+                    android:padding="16dp"
+                    android:layout_marginEnd="6dp"
+                    android:elevation="2dp"/>
+
+                <Button
+                    android:id="@+id/loadBtn"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="📂 LOAD"
+                    android:background="@drawable/btn_load"
+                    android:textColor="#ffffff"
+                    android:textSize="16sp"
+                    android:padding="16dp"
+                    android:layout_marginStart="6dp"
+                    android:elevation="2dp"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Scripts Tab -->
+        <LinearLayout
+            android:id="@+id/scriptsTab"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="📜 SAVED SCRIPTS"
+                android:textColor="#00ffff"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:padding="12dp"
+                android:background="#1a1a2e"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="No scripts saved yet"
+                android:textColor="#666666"
+                android:gravity="center"
+                android:textSize="14sp"/>
+        </LinearLayout>
+
+        <!-- Files Tab -->
+        <LinearLayout
+            android:id="@+id/filesTab"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="📁 FILE BROWSER"
+                android:textColor="#00ffff"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:padding="12dp"
+                android:background="#1a1a2e"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="No files found"
+                android:textColor="#666666"
+                android:gravity="center"
+                android:textSize="14sp"/>
+        </LinearLayout>
+
+        <!-- Settings Tab -->
+        <LinearLayout
+            android:id="@+id/settingsTab"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="⚙️ SETTINGS"
+                android:textColor="#00ffff"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:padding="12dp"
+                android:background="#1a1a2e"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="16dp"
+                android:background="#1a1a2e"
+                android:layout_marginTop="8dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Dark Theme"
+                    android:textColor="#ffffff"
+                    android:textSize="14sp"/>
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/themeSwitch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="true"/>
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Version: 2.0"
+                android:textColor="#666666"
+                android:padding="16dp"
+                android:gravity="center"
+                android:layout_marginTop="16dp"/>
+        </LinearLayout>
+
+    </FrameLayout>
+
+    <!-- Status Bar -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="EXECUTE"
-        android:background="#00cc44"
-        android:textColor="#000000"
-        android:padding="16dp"/>
+        android:background="#1a1a2e"
+        android:padding="8dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/statusText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Ready"
+            android:textColor="#666666"
+            android:textSize="12sp"
+            android:gravity="center"/>
+    </LinearLayout>
+
 </LinearLayout>
