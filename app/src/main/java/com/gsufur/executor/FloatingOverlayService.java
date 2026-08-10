@@ -29,12 +29,13 @@ public class FloatingOverlayService extends Service {
         overlayView = (LinearLayout) inflater.inflate(R.layout.overlay_layout, null);
 
         WindowManager.LayoutParams params = new WindowManager.LayoutParams(
-                WindowManager.LayoutParams.WRAP_CONTENT,
+                400,
                 WindowManager.LayoutParams.WRAP_CONTENT,
                 Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ?
                         WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY :
                         WindowManager.LayoutParams.TYPE_PHONE,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL |
+                        WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
                 PixelFormat.TRANSLUCENT
         );
         params.gravity = Gravity.TOP | Gravity.START;
@@ -46,9 +47,14 @@ public class FloatingOverlayService extends Service {
         EditText scriptEditor = overlayView.findViewById(R.id.scriptEditor);
         Button executeBtn = overlayView.findViewById(R.id.executeBtn);
 
+        // Make EditText focusable and clickable
+        scriptEditor.setFocusable(true);
+        scriptEditor.setFocusableInTouchMode(true);
+        scriptEditor.requestFocus();
+
         executeBtn.setOnClickListener(v -> {
             String script = scriptEditor.getText().toString();
-            Toast.makeText(this, script.isEmpty() ? "Empty" : "Executed: " + script, Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, script.isEmpty() ? "Empty" : "Executed!", Toast.LENGTH_SHORT).show();
         });
     }
 
