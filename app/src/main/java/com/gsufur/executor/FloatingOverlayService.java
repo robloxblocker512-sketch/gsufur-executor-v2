@@ -7,6 +7,7 @@ import android.os.Build;
 import android.os.IBinder;
 import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -29,13 +30,12 @@ public class FloatingOverlayService extends Service {
         overlayView = (LinearLayout) inflater.inflate(R.layout.overlay_layout, null);
 
         WindowManager.LayoutParams params = new WindowManager.LayoutParams(
-                400,
+                WindowManager.LayoutParams.WRAP_CONTENT,
                 WindowManager.LayoutParams.WRAP_CONTENT,
                 Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ?
                         WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY :
                         WindowManager.LayoutParams.TYPE_PHONE,
-                WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL |
-                        WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                 PixelFormat.TRANSLUCENT
         );
         params.gravity = Gravity.TOP | Gravity.START;
@@ -46,15 +46,32 @@ public class FloatingOverlayService extends Service {
 
         EditText scriptEditor = overlayView.findViewById(R.id.scriptEditor);
         Button executeBtn = overlayView.findViewById(R.id.executeBtn);
+        Button clearBtn = overlayView.findViewById(R.id.clearBtn);
 
-        // Make EditText focusable and clickable
-        scriptEditor.setFocusable(true);
-        scriptEditor.setFocusableInTouchMode(true);
+        // Make EditText work
+        scriptEditor.setOnTouchListener((v, event) -> {
+            if (event.getAction() == MotionEvent.ACTION_UP) {
+                v.performClick();
+                v.requestFocus();
+                return true;
+            }
+            return false;
+        });
+
         scriptEditor.requestFocus();
 
         executeBtn.setOnClickListener(v -> {
             String script = scriptEditor.getText().toString();
-            Toast.makeText(this, script.isEmpty() ? "Empty" : "Executed!", Toast.LENGTH_SHORT).show();
+            if (!script.isEmpty()) {
+                Toast.makeText(this, "Script Executed!", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "Script is empty", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        clearBtn.setOnClickListener(v -> {
+            scriptEditor.setText("");
+            Toast.makeText(this, "Cleared", Toast.LENGTH_SHORT).show();
         });
     }
 
