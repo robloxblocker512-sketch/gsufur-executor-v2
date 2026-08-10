@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
@@ -8,11 +8,10 @@
     android:padding="8dp">
 
     <LinearLayout
-        android:id="@+id/expandedView"
         android:layout_width="320dp"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:background="@drawable/overlay_bg"
+        android:background="#1a1a2e"
         android:padding="12dp">
 
         <LinearLayout
@@ -25,28 +24,10 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="⚡ GSUFUR"
+                android:text="GSUFUR"
                 android:textColor="#00ffff"
                 android:textSize="18sp"
                 android:textStyle="bold"/>
-
-            <ImageButton
-                android:id="@+id/minimizeBtn"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:background="@android:color/transparent"
-                android:src="@android:drawable/ic_menu_edit"
-                android:scaleType="centerCrop"
-                android:contentDescription="Minimize"/>
-
-            <ImageButton
-                android:id="@+id/closeBtn"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:background="@android:color/transparent"
-                android:src="@android:drawable/ic_menu_close_clear_cancel"
-                android:scaleType="centerCrop"
-                android:contentDescription="Close"/>
         </LinearLayout>
 
         <EditText
@@ -62,7 +43,10 @@
             android:hint="-- Enter Lua script"
             android:textColorHint="#444466"
             android:lineSpacingExtra="4dp"
-            android:scrollbars="vertical"/>
+            android:scrollbars="vertical"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:clickable="true"/>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -75,8 +59,8 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="▶"
-                android:background="@drawable/btn_execute"
+                android:text="Run"
+                android:background="#00ff88"
                 android:textColor="#000000"
                 android:textSize="18sp"
                 android:padding="12dp"
@@ -87,8 +71,8 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="✕"
-                android:background="@drawable/btn_clear"
+                android:text="Clear"
+                android:background="#cc4444"
                 android:textColor="#ffffff"
                 android:textSize="18sp"
                 android:padding="12dp"
@@ -104,26 +88,6 @@
             android:textSize="11sp"
             android:gravity="center"
             android:paddingTop="4dp"/>
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/collapsedView"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
-        android:orientation="vertical"
-        android:gravity="center"
-        android:visibility="gone"
-        android:background="@drawable/overlay_bg">
-
-        <TextView
-            android:id="@+id/collapsedStatus"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="GSUFUR"
-            android:textColor="#00ffff"
-            android:textSize="12sp"
-            android:textStyle="bold"
-            android:gravity="center"/>
     </LinearLayout>
 
 </LinearLayout>
