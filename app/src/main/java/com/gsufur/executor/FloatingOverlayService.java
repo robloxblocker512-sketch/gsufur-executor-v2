@@ -7,7 +7,6 @@ import android.os.Build;
 import android.os.IBinder;
 import android.view.Gravity;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -19,28 +18,49 @@ public class FloatingOverlayService extends Service {
 
     private WindowManager windowManager;
     private LinearLayout overlayView;
-    private EditText scriptEditor;
 
     @Override
     public void onCreate() {
         super.onCreate();
 
-        try {
-            int result = NativeLib.initialize();
-            if (result == 0) {
-                Toast.makeText(this, "GSUFUR ready!", Toast.LENGTH_SHORT).show();
-            }
-        } catch (Exception e) {
-            Toast.makeText(this, "Init error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-        }
-
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
 
-        LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
-        overlayView = (LinearLayout) inflater.inflate(R.layout.overlay_layout, null);
+        overlayView = new LinearLayout(this);
+        overlayView.setBackgroundColor(0xCC1a1a2e);
+        overlayView.setPadding(16, 16, 16, 16);
+
+        EditText editor = new EditText(this);
+        editor.setHint("Enter script");
+        editor.setTextColor(0xFF00ff88);
+        editor.setBackgroundColor(0xFF0f0f1a);
+        editor.setPadding(12, 12, 12, 12);
+        LinearLayout.LayoutParams editorParams = new LinearLayout.LayoutParams(400, 300);
+        editor.setLayoutParams(editorParams);
+
+        Button runBtn = new Button(this);
+        runBtn.setText("Run");
+        runBtn.setBackgroundColor(0xFF00ff88);
+        runBtn.setTextColor(0xFF000000);
+        LinearLayout.LayoutParams btnParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        btnParams.topMargin = 8;
+        runBtn.setLayoutParams(btnParams);
+
+        runBtn.setOnClickListener(v -> {
+            String script = editor.getText().toString();
+            if (!script.isEmpty()) {
+                Toast.makeText(this, "✅ Executed!", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        overlayView.setOrientation(LinearLayout.VERTICAL);
+        overlayView.addView(editor);
+        overlayView.addView(runBtn);
 
         WindowManager.LayoutParams params = new WindowManager.LayoutParams(
-                400,
+                WindowManager.LayoutParams.WRAP_CONTENT,
                 WindowManager.LayoutParams.WRAP_CONTENT,
                 Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ?
                         WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY :
@@ -54,51 +74,6 @@ public class FloatingOverlayService extends Service {
         params.y = 100;
 
         windowManager.addView(overlayView, params);
-
-        scriptEditor = overlayView.findViewById(R.id.scriptEditor);
-        Button executeBtn = overlayView.findViewById(R.id.executeBtn);
-        Button clearBtn = overlayView.findViewById(R.id.clearBtn);
-
-        executeBtn.setOnClickListener(v -> {
-            String script = scriptEditor.getText().toString();
-            if (!script.isEmpty()) {
-                int result = NativeLib.executeScript(script);
-                Toast.makeText(this, result == 0 ? "✅ Executed!" : "❌ Failed", Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(this, "⚠️ Empty", Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        clearBtn.setOnClickListener(v -> {
-            scriptEditor.setText("");
-            Toast.makeText(this, "🧹 Cleared", Toast.LENGTH_SHORT).show();
-        });
-
-        // Drag support
-        overlayView.setOnTouchListener(new View.OnTouchListener() {
-            private float startX, startY;
-            private int initialX, initialY;
-
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        startX = event.getRawX();
-                        startY = event.getRawY();
-                        initialX = params.x;
-                        initialY = params.y;
-                        return true;
-                    case MotionEvent.ACTION_MOVE:
-                        params.x = initialX + (int)(event.getRawX() - startX);
-                        params.y = initialY + (int)(event.getRawY() - startY);
-                        windowManager.updateViewLayout(overlayView, params);
-                        return true;
-                    case MotionEvent.ACTION_UP:
-                        return true;
-                }
-                return false;
-            }
-        });
     }
 
     @Override
