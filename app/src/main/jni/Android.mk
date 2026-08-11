@@ -3,5 +3,6 @@ include $(CLEAR_VARS)
 LOCAL_MODULE := bgfx_hook
 LOCAL_SRC_FILES := bgfx_hook.c
 LOCAL_LDLIBS := -llog -ldl
+LOCAL_CPPFLAGS := -std=c++11 -fexceptions
 LOCAL_CFLAGS := -std=c11
 include $(BUILD_SHARED_LIBRARY)
