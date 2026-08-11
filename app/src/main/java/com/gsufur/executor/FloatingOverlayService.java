@@ -20,20 +20,18 @@ public class FloatingOverlayService extends Service {
     private WindowManager windowManager;
     private LinearLayout overlayView;
     private EditText scriptEditor;
-    private float initialTouchX, initialTouchY;
-    private int initialWindowX, initialWindowY;
-    private boolean isDragging = false;
 
     @Override
     public void onCreate() {
         super.onCreate();
 
-        // Initialize native library
-        int result = NativeLib.initialize();
-        if (result == 0) {
-            Toast.makeText(this, "GSUFUR ready!", Toast.LENGTH_SHORT).show();
-        } else {
-            Toast.makeText(this, "Init failed", Toast.LENGTH_SHORT).show();
+        try {
+            int result = NativeLib.initialize();
+            if (result == 0) {
+                Toast.makeText(this, "GSUFUR ready!", Toast.LENGTH_SHORT).show();
+            }
+        } catch (Exception e) {
+            Toast.makeText(this, "Init error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
 
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
@@ -61,58 +59,45 @@ public class FloatingOverlayService extends Service {
         Button executeBtn = overlayView.findViewById(R.id.executeBtn);
         Button clearBtn = overlayView.findViewById(R.id.clearBtn);
 
-        // Drag support
-        overlayView.setOnTouchListener((v, event) -> {
-            switch (event.getAction()) {
-                case MotionEvent.ACTION_DOWN:
-                    initialTouchX = event.getRawX();
-                    initialTouchY = event.getRawY();
-                    initialWindowX = params.x;
-                    initialWindowY = params.y;
-                    isDragging = false;
-                    return true;
-                case MotionEvent.ACTION_MOVE:
-                    float deltaX = event.getRawX() - initialTouchX;
-                    float deltaY = event.getRawY() - initialTouchY;
-                    if (Math.abs(deltaX) > 10 || Math.abs(deltaY) > 10) {
-                        isDragging = true;
-                    }
-                    if (isDragging) {
-                        params.x = initialWindowX + (int) deltaX;
-                        params.y = initialWindowY + (int) deltaY;
-                        windowManager.updateViewLayout(overlayView, params);
-                    }
-                    return true;
-                case MotionEvent.ACTION_UP:
-                    if (!isDragging) {
-                        scriptEditor.requestFocus();
-                    }
-                    return true;
-            }
-            return false;
-        });
-
-        scriptEditor.setOnClickListener(v -> {
-            v.requestFocus();
-        });
-
         executeBtn.setOnClickListener(v -> {
             String script = scriptEditor.getText().toString();
             if (!script.isEmpty()) {
-                int result2 = NativeLib.executeScript(script);
-                if (result2 == 0) {
-                    Toast.makeText(this, "✅ Script executed!", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(this, "❌ Execution failed", Toast.LENGTH_SHORT).show();
-                }
+                int result = NativeLib.executeScript(script);
+                Toast.makeText(this, result == 0 ? "✅ Executed!" : "❌ Failed", Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(this, "⚠️ Script is empty", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "⚠️ Empty", Toast.LENGTH_SHORT).show();
             }
         });
 
         clearBtn.setOnClickListener(v -> {
             scriptEditor.setText("");
             Toast.makeText(this, "🧹 Cleared", Toast.LENGTH_SHORT).show();
+        });
+
+        // Drag support
+        overlayView.setOnTouchListener(new View.OnTouchListener() {
+            private float startX, startY;
+            private int initialX, initialY;
+
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        startX = event.getRawX();
+                        startY = event.getRawY();
+                        initialX = params.x;
+                        initialY = params.y;
+                        return true;
+                    case MotionEvent.ACTION_MOVE:
+                        params.x = initialX + (int)(event.getRawX() - startX);
+                        params.y = initialY + (int)(event.getRawY() - startY);
+                        windowManager.updateViewLayout(overlayView, params);
+                        return true;
+                    case MotionEvent.ACTION_UP:
+                        return true;
+                }
+                return false;
+            }
         });
     }
 
