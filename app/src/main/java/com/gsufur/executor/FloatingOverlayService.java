@@ -28,6 +28,14 @@ public class FloatingOverlayService extends Service {
     public void onCreate() {
         super.onCreate();
 
+        // Initialize native library
+        int result = NativeLib.initialize();
+        if (result == 0) {
+            Toast.makeText(this, "GSUFUR ready!", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(this, "Init failed", Toast.LENGTH_SHORT).show();
+        }
+
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
 
         LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
@@ -77,7 +85,6 @@ public class FloatingOverlayService extends Service {
                     return true;
                 case MotionEvent.ACTION_UP:
                     if (!isDragging) {
-                        // It was a click, not a drag — focus the editor
                         scriptEditor.requestFocus();
                     }
                     return true;
@@ -85,7 +92,6 @@ public class FloatingOverlayService extends Service {
             return false;
         });
 
-        // Focus editor on click
         scriptEditor.setOnClickListener(v -> {
             v.requestFocus();
         });
@@ -93,7 +99,12 @@ public class FloatingOverlayService extends Service {
         executeBtn.setOnClickListener(v -> {
             String script = scriptEditor.getText().toString();
             if (!script.isEmpty()) {
-                Toast.makeText(this, "✅ Script sent!", Toast.LENGTH_SHORT).show();
+                int result2 = NativeLib.executeScript(script);
+                if (result2 == 0) {
+                    Toast.makeText(this, "✅ Script executed!", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(this, "❌ Execution failed", Toast.LENGTH_SHORT).show();
+                }
             } else {
                 Toast.makeText(this, "⚠️ Script is empty", Toast.LENGTH_SHORT).show();
             }
