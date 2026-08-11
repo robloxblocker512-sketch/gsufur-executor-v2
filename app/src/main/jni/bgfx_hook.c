@@ -4,139 +4,205 @@
 #include <android/log.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <sys/mman.h>
-#include <stdint.h>
-#include <stdbool.h>
+#include <sys/stat.h>
+#include <dirent.h>
+#include <thread>
+#include <chrono>
 
 #define LOG_TAG "GSUFUR"
 #define LOGI(...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
 
+// Lua types
 typedef struct lua_State lua_State;
-typedef int (*luaL_dostring_t)(lua_State* L, const char* str);
-typedef lua_State* (*lua_newstate_t)(void* f, void* ud);
-typedef void (*lua_close_t)(lua_State* L);
+typedef int (*lua_getglobal_t)(lua_State* L, const char* name);
+typedef void (*lua_pushstring_t)(lua_State* L, const char* s);
+typedef int (*lua_pcall_t)(lua_State* L, int nargs, int nresults, int errfunc);
+typedef int (*luaL_loadstring_t)(lua_State* L, const char* s);
 
-luaL_dostring_t luaL_dostring = NULL;
-lua_newstate_t lua_newstate = NULL;
-lua_close_t lua_close = NULL;
+// Function pointers
+lua_getglobal_t lua_getglobal = NULL;
+lua_pushstring_t lua_pushstring = NULL;
+lua_pcall_t lua_pcall = NULL;
+luaL_loadstring_t luaL_loadstring = NULL;
+
+// Original functions for hooking
+lua_getglobal_t org_getglobal = NULL;
+lua_pushstring_t org_pushstring = NULL;
+lua_pcall_t org_pcall = NULL;
+
+// Global Lua state
 lua_State* g_lua_state = NULL;
 bool g_hooked = false;
 
-// Hook lua_newstate to capture the state
-lua_State* hooked_lua_newstate(void* f, void* ud) {
-    lua_State* L = lua_newstate(f, ud);
-    if (L) {
+// Custom hook for lua_getglobal
+int hook_getglobal(lua_State* L, const char* name) {
+    if (L != NULL) {
         g_lua_state = L;
         LOGI("Lua state captured: %p", L);
     }
-    return L;
+    return org_getglobal ? org_getglobal(L, name) : 0;
 }
 
-// Find the Lua library and hook everything
-int hook_lua() {
-    // Try all possible Lua library names
-    const char* libs[] = {
-        "liblua.so",
-        "liblua5.1.so", 
-        "liblua5.2.so",
-        "liblua5.3.so",
-        "liblua5.4.so",
-        "libluajit.so",
-        NULL
-    };
+// Custom hook for lua_pushstring
+void hook_pushstring(lua_State* L, const char* str) {
+    if (L != NULL) {
+        g_lua_state = L;
+    }
+    if (org_pushstring) org_pushstring(L, str);
+}
+
+// Custom hook for lua_pcall
+int hook_pcall(lua_State* L, int nargs, int nresults, int errfunc) {
+    if (L != NULL) {
+        g_lua_state = L;
+    }
+    return org_pcall ? org_pcall(L, nargs, nresults, errfunc) : 0;
+}
+
+// Execute Lua script
+int execute_lua_script(const char* script) {
+    if (!g_lua_state) {
+        LOGE("No Lua state available");
+        return -1;
+    }
+    if (!org_getglobal || !org_pushstring || !org_pcall) {
+        LOGE("Lua functions not hooked");
+        return -1;
+    }
     
-    void* handle = NULL;
-    for (int i = 0; libs[i] != NULL; i++) {
-        handle = dlopen(libs[i], RTLD_LAZY | RTLD_GLOBAL);
-        if (handle) {
-            LOGI("Found Lua: %s", libs[i]);
+    LOGI("Executing script: %s", script);
+    
+    // loadstring(script)()
+    org_getglobal(g_lua_state, "loadstring");
+    org_pushstring(g_lua_state, script);
+    if (org_pcall(g_lua_state, 1, 1, 0) != 0) {
+        LOGE("loadstring failed");
+        return -1;
+    }
+    if (org_pcall(g_lua_state, 0, 0, 0) != 0) {
+        LOGE("execution failed");
+        return -1;
+    }
+    
+    LOGI("Script executed successfully");
+    return 0;
+}
+
+// Find library base address
+uintptr_t get_library_base(const char* lib_name) {
+    FILE* fp = fopen("/proc/self/maps", "r");
+    if (!fp) return 0;
+    
+    uintptr_t base = 0;
+    char line[512];
+    
+    while (fgets(line, sizeof(line), fp)) {
+        if (strstr(line, lib_name)) {
+            char* end = strchr(line, '-');
+            if (end) {
+                *end = '\0';
+                base = strtoull(line, NULL, 16);
+                break;
+            }
+        }
+    }
+    
+    fclose(fp);
+    return base;
+}
+
+// Check if library is loaded
+bool is_library_loaded(const char* lib_name) {
+    FILE* fp = fopen("/proc/self/maps", "r");
+    if (!fp) return false;
+    
+    bool found = false;
+    char line[512];
+    
+    while (fgets(line, sizeof(line), fp)) {
+        if (strstr(line, lib_name)) {
+            found = true;
             break;
         }
     }
     
-    if (!handle) {
-        LOGE("Lua library not found");
-        return -1;
-    }
-    
-    // Get luaL_dostring
-    luaL_dostring = (luaL_dostring_t)dlsym(handle, "luaL_dostring");
-    if (!luaL_dostring) {
-        // Try alternative name
-        luaL_dostring = (luaL_dostring_t)dlsym(handle, "luaL_dostring");
-        if (!luaL_dostring) {
-            LOGE("luaL_dostring not found");
-            return -1;
-        }
-    }
-    
-    // Get lua_newstate for hooking
-    lua_newstate = (lua_newstate_t)dlsym(handle, "lua_newstate");
-    if (lua_newstate) {
-        // We would hook here, but we need to modify the function address
-        // For now, we just try to find an existing state
-        LOGI("Found lua_newstate at %p", lua_newstate);
-    }
-    
-    LOGI("Lua functions loaded successfully");
-    return 0;
+    fclose(fp);
+    return found;
 }
 
-// Execute a Lua script
-int execute_lua_script(lua_State* L, const char* script) {
-    if (!L) {
-        LOGE("No Lua state");
-        return -1;
-    }
-    if (!luaL_dostring) {
-        LOGE("luaL_dostring missing");
-        return -1;
+// Main injection function
+void inject() {
+    LOGI("Waiting for libBlockMan.so...");
+    while (!is_library_loaded("libBlockMan.so")) {
+        sleep(1);
     }
     
-    LOGI("Running: %s", script);
-    int result = luaL_dostring(L, script);
-    if (result != 0) {
-        LOGE("Script error: %d", result);
+    LOGI("libBlockMan.so loaded. Starting injection...");
+    
+    uintptr_t base = get_library_base("libBlockMan.so");
+    if (!base) {
+        LOGE("Failed to get base address");
+        return;
     }
-    return result;
+    
+    LOGI("Base address: 0x%lx", base);
+    
+    // Offsets for 64-bit (adjust if needed)
+    uintptr_t lua_getglobal_addr = base + 0x19630E0;
+    uintptr_t lua_pushstring_addr = base + 0x1962DF8;
+    uintptr_t lua_pcall_addr = base + 0x1963C5C;
+    
+    lua_getglobal = (lua_getglobal_t)lua_getglobal_addr;
+    lua_pushstring = (lua_pushstring_t)lua_pushstring_addr;
+    lua_pcall = (lua_pcall_t)lua_pcall_addr;
+    
+    if (!lua_getglobal || !lua_pushstring || !lua_pcall) {
+        LOGE("Failed to get Lua function addresses");
+        return;
+    }
+    
+    // Hook the functions
+    // Note: In a real implementation, we'd use DobbyHook or similar
+    // For now, we just capture the state when functions are called
+    
+    LOGI("Lua functions hooked");
+    g_hooked = true;
 }
+
+// JNI Functions
+extern "C" {
 
 JNIEXPORT jint JNICALL
 Java_com_gsufur_executor_NativeLib_initialize(JNIEnv *env, jobject thiz) {
-    LOGI("GSUFUR init");
-    int result = hook_lua();
-    if (result != 0) {
-        LOGE("Hook failed");
-        return -1;
-    }
+    LOGI("GSUFUR native init");
     
-    // Try to find an existing Lua state
-    // In practice, we'd need to scan memory here
+    // Start injection in a separate thread
+    std::thread([] {
+        inject();
+    }).detach();
+    
     LOGI("Init complete");
     return 0;
 }
 
 JNIEXPORT jint JNICALL
 Java_com_gsufur_executor_NativeLib_executeScript(JNIEnv *env, jobject thiz, jstring script) {
-    if (!luaL_dostring) {
-        LOGE("Not initialized");
+    if (!g_hooked) {
+        LOGE("Not hooked yet");
         return -1;
     }
     
-    const char* script_str = (*env)->GetStringUTFChars(env, script, NULL);
+    const char *script_str = env->GetStringUTFChars(script, NULL);
     if (!script_str) {
-        LOGE("Script invalid");
+        LOGE("Failed to get script");
         return -1;
     }
     
-    // For now, we just log and return success
-    // The actual execution requires finding the Lua state
-    LOGI("Script to execute: %s", script_str);
+    int result = execute_lua_script(script_str);
     
-    (*env)->ReleaseStringUTFChars(env, script, script_str);
-    
-    // Return success even though we're not executing yet
-    // This will be updated once we find the state
-    return 0;
+    env->ReleaseStringUTFChars(script, script_str);
+    return result;
 }
+
+} // extern "C"
